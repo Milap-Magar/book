@@ -6,7 +6,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
     <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="text-4xl">{title}</h1>
-        {subtitle && <p className="mt-1 text-ink/60">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-muted">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -56,7 +56,7 @@ export function Stars({ value, count }: { value: number; count?: number }) {
         ))}
       </span>
       <span className="sr-only">{value.toFixed(1)} out of 5</span>
-      {count !== undefined && <span className="font-semibold text-ink/50">({count})</span>}
+      {count !== undefined && <span className="font-semibold text-muted">({count})</span>}
     </span>
   )
 }
