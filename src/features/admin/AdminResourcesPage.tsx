@@ -114,7 +114,7 @@ export function AdminResourcesPage() {
                       <span className="font-medium">Reason:</span> {resource.rejectionReason}
                     </p>
                   )}
-                  {resource.reviewedAt && <p className="mt-2 text-xs text-ink/50">Reviewed {formatDate(resource.reviewedAt)}</p>}
+                  {resource.reviewedAt && <p className="mt-2 text-xs text-muted">Reviewed {formatDate(resource.reviewedAt)}</p>}
                 </ResourceItem>
               ))}
             </ul>

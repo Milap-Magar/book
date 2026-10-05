@@ -153,7 +153,7 @@ export function UploadResourcePage() {
             >
               <div className="h-full bg-brand-600 transition-[width]" style={{ width: `${progress}%` }} />
             </div>
-            <p className="mt-1 text-xs text-ink/60">{progress < 100 ? `Uploading… ${progress}%` : 'Processing…'}</p>
+            <p className="mt-1 text-xs text-muted">{progress < 100 ? `Uploading… ${progress}%` : 'Processing…'}</p>
           </div>
         )}
 

@@ -112,7 +112,7 @@ export function ReviewSection({ bookId }: { bookId: number }) {
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <Stars value={review.rating} />
                     <span className="text-sm font-medium">{review.user.displayName}</span>
-                    <span className="text-xs text-ink/50">{formatDate(review.createdAt)}</span>
+                    <span className="text-xs text-muted">{formatDate(review.createdAt)}</span>
                     {/* Authors delete their own review in the form above; this is the admin's moderation control. */}
                     {user?.role === 'ADMIN' && review.user.id !== user.id && (
                       <button
