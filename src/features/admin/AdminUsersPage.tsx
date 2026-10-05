@@ -28,7 +28,7 @@ export function AdminUsersPage() {
           <>
             <div className="overflow-x-auto clay">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-line text-xs text-ink/60 uppercase">
+                <thead className="border-b border-line text-xs text-muted uppercase">
                   <tr>
                     <th scope="col" className="px-4 py-3">Name</th>
                     <th scope="col" className="px-4 py-3">Email</th>
@@ -44,7 +44,7 @@ export function AdminUsersPage() {
                     return (
                       <tr key={user.id}>
                         <td className="px-4 py-3 font-medium">
-                          {user.displayName} {isMe && <span className="font-normal text-ink/50">(you)</span>}
+                          {user.displayName} {isMe && <span className="font-normal text-muted">(you)</span>}
                         </td>
                         <td className="px-4 py-3">{user.email}</td>
                         <td className="px-4 py-3 whitespace-nowrap">{formatDate(user.createdAt)}</td>

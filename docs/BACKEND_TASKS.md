@@ -1,4 +1,4 @@
-# BookHub backend: tasks and API contract
+# Shelfmallow backend: tasks and API contract
 
 This file has two parts:
 
@@ -27,7 +27,7 @@ Do the stages in order. Each stage ends with a **✔ check**; the stage is done 
 - [x] `BookRepository`: `existsByIsbn` must return `boolean`. `findByIsbn` → `Optional<Book>`.
 - [x] Replace field `@Autowired` with `private final` fields and a constructor in `BookService` and `BookController`.
 - [x] Make `ErrorResponse` a record: `timestamp`, `status`, `error`, `message`, `fieldErrors` (nullable map). Use it in `GlobalExceptionHandler` instead of the `Map`.
-- [x] `Book`: `id` → `Long`. Remove `price` and `applyDiscount()` (BookHub has no prices). Base `equals`/`hashCode` on `id`, not ISBN, because ISBN becomes optional.
+- [x] `Book`: `id` → `Long`. Remove `price` and `applyDiscount()` (Shelfmallow has no prices). Base `equals`/`hashCode` on `id`, not ISBN, because ISBN becomes optional.
 - [x] Remove the REST Docs dependencies and the asciidoctor plugin from `pom.xml`.
 - [x] Update `TODO.md` and `README.md`: tick what is really done, fix `/api/books` → `/api/v1/books`, drop price and discount.
 - [ ] `Book.publishedYear` → `Integer`. Deferred to Stage 1: it changes a column type, which needs a Flyway migration.

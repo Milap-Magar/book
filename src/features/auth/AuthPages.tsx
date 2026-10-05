@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { Link, Navigate, useLocation } from 'react-router'
 import { z } from 'zod'
 import { Button } from '@/components/Button'
+import { AuthArt } from '@/components/illustrations/Scenes'
 import { Input } from '@/components/Field'
 import { FormError } from '@/components/States'
 import { useLogin, useRegister } from '@/features/auth/api'
@@ -36,12 +37,32 @@ function useReturnPath(): string {
   return '/dashboard'
 }
 
-function AuthCard({ title, children, footer }: { title: string; children: ReactNode; footer: ReactNode }) {
+interface AuthCardProps {
+  title: string
+  lead: string
+  children: ReactNode
+  footer: ReactNode
+}
+
+/** Two clay panels: the mascot and the pitch on the left, the form on the right. */
+function AuthCard({ title, lead, children, footer }: AuthCardProps) {
   return (
-    <div className="mx-auto max-w-sm">
-      <h1 className="mb-6 text-center text-3xl">{title}</h1>
-      <div className="clay p-7">{children}</div>
-      <p className="mt-4 text-center text-sm text-ink/70">{footer}</p>
+    <div className="clay-lg mx-auto grid max-w-4xl overflow-hidden md:grid-cols-[1fr_1.1fr]">
+      <div className="tint-brand relative hidden flex-col items-center justify-center overflow-hidden bg-brand-600 p-10 text-center text-white md:flex">
+        <span aria-hidden="true" className="clay-blob tint-pink absolute -top-8 -left-8 size-24 bg-pink" />
+        <span aria-hidden="true" className="clay-blob tint-butter absolute right-6 bottom-8 size-12 bg-butter" />
+        <span aria-hidden="true" className="clay-blob tint-mint absolute top-10 right-10 size-8 bg-mint" />
+        <AuthArt className="relative w-52" />
+        <p className="relative mt-4 font-display text-2xl font-medium">Your shelf is waiting.</p>
+        <p className="relative mt-1 max-w-[26ch] text-brand-100">Books, notes and past papers, shared by students.</p>
+      </div>
+
+      <div className="p-7 sm:p-10">
+        <h1 className="text-4xl">{title}</h1>
+        <p className="mt-2 mb-7 text-muted">{lead}</p>
+        {children}
+        <p className="mt-6 text-sm text-ink/80">{footer}</p>
+      </div>
     </div>
   )
 }
@@ -58,11 +79,12 @@ export function LoginPage() {
 
   return (
     <AuthCard
-      title="Log in"
+      title="Welcome back"
+      lead="Log in to download, upload and review."
       footer={
         <>
           New here?{' '}
-          <Link to="/register" state={location.state} className="font-medium text-brand-700 underline">
+          <Link to="/register" state={location.state} className="font-bold text-brand-700 underline decoration-2 underline-offset-4">
             Create an account
           </Link>
         </>
@@ -78,7 +100,7 @@ export function LoginPage() {
           {...form.register('password')}
         />
         <FormError error={login.error} />
-        <Button type="submit" loading={login.isPending} className="w-full">
+        <Button type="submit" size="lg" loading={login.isPending} className="w-full">
           Log in
         </Button>
       </form>
@@ -86,7 +108,7 @@ export function LoginPage() {
       {/* Only rendered by `npm run dev:mock`; the constant is null in every other mode. */}
       {demoAccounts && (
         <div className="clay-well mt-6 p-4 text-center">
-          <p className="mb-3 text-xs font-bold text-ink/60">Mock data is on. Sign in as a demo user:</p>
+          <p className="mb-3 text-xs font-bold text-muted">Mock data is on. Sign in as a demo user:</p>
           <div className="flex justify-center gap-2">
             <Button size="sm" variant="secondary" disabled={login.isPending} onClick={() => login.mutate(demoAccounts.student)}>
               Student
@@ -114,10 +136,11 @@ export function RegisterPage() {
   return (
     <AuthCard
       title="Create your account"
+      lead="Free, and it takes about a minute."
       footer={
         <>
           Already have an account?{' '}
-          <Link to="/login" state={location.state} className="font-medium text-brand-700 underline">
+          <Link to="/login" state={location.state} className="font-bold text-brand-700 underline decoration-2 underline-offset-4">
             Log in
           </Link>
         </>
@@ -141,7 +164,7 @@ export function RegisterPage() {
           {...form.register('password')}
         />
         <FormError error={register.error} />
-        <Button type="submit" loading={register.isPending} className="w-full">
+        <Button type="submit" size="lg" loading={register.isPending} className="w-full">
           Sign up
         </Button>
       </form>

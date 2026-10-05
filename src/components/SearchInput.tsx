@@ -31,7 +31,7 @@ export function SearchInput({ value, onChange, placeholder, label }: SearchInput
       value={text}
       onChange={(event) => setText(event.target.value)}
       placeholder={placeholder}
-      className="block w-full clay-input placeholder:text-ink/40"
+      className="block w-full clay-input placeholder:text-muted/70"
     />
   )
 }

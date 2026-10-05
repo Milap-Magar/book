@@ -37,7 +37,7 @@ export function AdminBooksPage() {
           <>
             <div className="overflow-x-auto clay">
               <table className="w-full text-left text-sm">
-                <thead className="border-b border-line text-xs text-ink/60 uppercase">
+                <thead className="border-b border-line text-xs text-muted uppercase">
                   <tr>
                     <th scope="col" className="px-4 py-3">Title</th>
                     <th scope="col" className="px-4 py-3">Author</th>
