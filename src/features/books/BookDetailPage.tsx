@@ -78,26 +78,26 @@ export function BookDetailPage() {
                 {data.ratingCount > 0 ? (
                   <Stars value={data.ratingAvg} count={data.ratingCount} />
                 ) : (
-                  <span className="text-sm text-ink/50">Not rated yet</span>
+                  <span className="text-sm text-muted">Not rated yet</span>
                 )}
               </div>
 
               <dl className="mt-5 grid max-w-md grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
                 {data.publisher && (
                   <>
-                    <dt className="text-ink/50">Publisher</dt>
+                    <dt className="text-muted">Publisher</dt>
                     <dd>{data.publisher}</dd>
                   </>
                 )}
                 {data.publishedYear && (
                   <>
-                    <dt className="text-ink/50">Published</dt>
+                    <dt className="text-muted">Published</dt>
                     <dd>{data.publishedYear}</dd>
                   </>
                 )}
                 {data.isbn && (
                   <>
-                    <dt className="text-ink/50">ISBN</dt>
+                    <dt className="text-muted">ISBN</dt>
                     <dd>{data.isbn}</dd>
                   </>
                 )}
@@ -107,7 +107,7 @@ export function BookDetailPage() {
                 {data.hasFile ? (
                   <DownloadButtons request={(disposition) => requestBookDownload(data.id, disposition)} />
                 ) : (
-                  <p className="text-sm text-ink/60">No file is available for this book yet.</p>
+                  <p className="text-sm text-muted">No file is available for this book yet.</p>
                 )}
               </div>
             </div>
