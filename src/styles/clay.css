@@ -1,0 +1,152 @@
+/*
+ * Claymorphism in three rules:
+ *   1. Big, soft corners.
+ *   2. Two inner shadows per surface: a light one at the top (where light hits) and a
+ *      tinted dark one at the bottom. That pair is what makes a shape look inflated.
+ *   3. A soft, coloured drop shadow underneath, so the shape floats above the page.
+ * Raised things (cards, buttons, chips) use all three, at one of three heights:
+ * `clay-sm` < `clay` < `clay-lg`. Things you type into are the opposite: pressed into
+ * the page (`clay-well`, `clay-input`).
+ */
+
+/* Small raised surface: chips, list rows, small tiles. */
+@utility clay-sm {
+  border-radius: 1.125rem;
+  background-color: #fff;
+  box-shadow:
+    0 12px 20px -14px rgb(var(--clay-tint) / 0.5),
+    inset 0 -6px 8px -4px rgb(var(--clay-tint) / 0.14),
+    inset 0 6px 8px -5px rgb(255 255 255 / 1);
+}
+
+/* Raised surface: cards, panels, tables. */
+@utility clay {
+  border-radius: 1.75rem;
+  background-color: #fff;
+  box-shadow:
+    0 22px 40px -22px rgb(var(--clay-tint) / 0.45),
+    0 6px 14px -8px rgb(var(--clay-tint) / 0.2),
+    inset 0 -10px 14px -6px rgb(var(--clay-tint) / 0.17),
+    inset 0 10px 14px -8px rgb(255 255 255 / 1);
+}
+
+/* The tallest surface: hero panels, pricing cards. One or two per screen at most. */
+@utility clay-lg {
+  border-radius: 2.5rem;
+  background-color: #fff;
+  box-shadow:
+    0 40px 60px -34px rgb(var(--clay-tint) / 0.55),
+    0 10px 20px -12px rgb(var(--clay-tint) / 0.22),
+    inset 0 -16px 22px -10px rgb(var(--clay-tint) / 0.2),
+    inset 0 16px 22px -12px rgb(255 255 255 / 1);
+}
+
+/* A ball of clay. Decorative only; set a size and a background colour. */
+@utility clay-blob {
+  border-radius: 9999px;
+  box-shadow:
+    0 14px 22px -12px rgb(var(--clay-tint) / 0.55),
+    inset -6px -8px 12px -4px rgb(var(--clay-tint) / 0.28),
+    inset 6px 8px 12px -6px rgb(255 255 255 / 0.9);
+}
+
+/* Pressed into the page: empty states, groups of controls. */
+@utility clay-well {
+  border-radius: 1.5rem;
+  background-color: rgb(255 255 255 / 0.5);
+  box-shadow:
+    inset 0 5px 10px -2px rgb(var(--clay-tint) / 0.2),
+    inset 0 -4px 8px -2px rgb(255 255 255 / 0.95);
+}
+
+/* Text inputs, selects and textareas. */
+@utility clay-input {
+  border-radius: 1rem;
+  border: 2px solid transparent;
+  background-color: #f8f4fb;
+  min-height: 2.75rem;
+  padding: 0.6rem 0.95rem;
+  font-size: 0.9375rem;
+  line-height: 1.25rem;
+  box-shadow:
+    inset 0 4px 8px -2px rgb(var(--clay-tint) / 0.22),
+    inset 0 -3px 5px -1px rgb(255 255 255 / 1);
+  transition:
+    border-color var(--dur-fast),
+    background-color var(--dur-fast);
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-brand-500);
+    background-color: #fff;
+  }
+  &[aria-invalid='true'] {
+    border-color: #e5484d;
+  }
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+@utility clay-input-sm {
+  border-radius: 0.8rem;
+  min-height: 2.25rem;
+  padding: 0.3rem 0.6rem;
+}
+
+/* Buttons: raised, lift a little on hover, squash when pressed. */
+@utility clay-btn {
+  border-radius: 1.125rem;
+  box-shadow:
+    0 12px 18px -10px rgb(var(--clay-tint) / 0.75),
+    inset 0 -6px 8px -3px rgb(0 0 0 / 0.16),
+    inset 0 6px 8px -4px rgb(255 255 255 / 0.55);
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+  &:active:not(:disabled) {
+    transform: translateY(2px) scale(0.985);
+    box-shadow:
+      0 4px 8px -6px rgb(var(--clay-tint) / 0.7),
+      inset 0 5px 8px -3px rgb(0 0 0 / 0.18),
+      inset 0 -3px 5px -3px rgb(255 255 255 / 0.4);
+  }
+}
+
+/* Anything raised that is also a link: float up on hover. */
+@utility clay-lift {
+  transition: transform var(--dur-base) var(--ease-out);
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+/* Shadow colours. A tinted surface should cast a shadow of its own colour. */
+@utility tint-brand {
+  --clay-tint: 108 77 230;
+}
+@utility tint-pink {
+  --clay-tint: 200 70 125;
+}
+@utility tint-butter {
+  --clay-tint: 176 132 22;
+}
+@utility tint-mint {
+  --clay-tint: 34 140 104;
+}
+@utility tint-sky {
+  --clay-tint: 44 112 190;
+}
+@utility tint-peach {
+  --clay-tint: 204 104 52;
+}
+@utility tint-ink {
+  --clay-tint: 40 26 70;
+}
