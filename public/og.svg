@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a82f8"/><stop offset="1" stop-color="#5f41d8"/></linearGradient>
+    <linearGradient id="p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffdf7"/><stop offset="1" stop-color="#f1e1c9"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#fbf5ec"/>
+  <circle cx="1080" cy="90" r="150" fill="#ffd3e4"/>
+  <circle cx="120" cy="590" r="170" fill="#c2f0df"/>
+  <circle cx="1010" cy="560" r="70" fill="#fff0b8"/>
+  <g transform="translate(120 195) scale(6)">
+    <rect x="3" y="3" width="34" height="34" rx="11" fill="url(#c)"/>
+    <rect x="9" y="6.500" width="2.200" height="27" rx="1.100" fill="#4a30b8" opacity=".35"/>
+    <rect x="13" y="25.500" width="24" height="7" rx="3.500" fill="url(#p)"/>
+    <path d="M25 3h7v14.500l-3.500-3-3.500 3z" fill="#ff7fa8"/>
+    <ellipse cx="16" cy="10" rx="7" ry="3.200" fill="#fff" opacity=".38" transform="rotate(-14 16 10)"/>
+  </g>
+  <text x="410" y="310" font-family="Fredoka, Nunito, Arial Rounded MT Bold, sans-serif" font-weight="600" font-size="104" fill="#33263f">Shelf<tspan fill="#6c4de6">mallow</tspan></text>
+  <text x="414" y="382" font-family="Nunito, Arial, sans-serif" font-weight="700" font-size="38" fill="#6a5d76">Books and notes, shared by students.</text>
+</svg>
