@@ -42,7 +42,7 @@ function CategoryRow({ category }: { category: Category }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="font-medium">{category.name}</span>
-            <span className="ml-2 text-xs text-ink/50">{category.slug}</span>
+            <span className="ml-2 text-xs text-muted">{category.slug}</span>
           </div>
           <div className="flex gap-4 text-sm">
             <button type="button" className="text-brand-700 underline" onClick={() => setEditing(true)}>

@@ -1,7 +1,7 @@
 import { useId, type ComponentProps, type ReactNode } from 'react'
 
 const control =
-  'block w-full clay-input placeholder:text-ink/40'
+  'block w-full clay-input placeholder:text-muted/70'
 
 interface FieldShellProps {
   id: string
@@ -14,11 +14,11 @@ interface FieldShellProps {
 function FieldShell({ id, label, error, hint, children }: FieldShellProps) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-bold">
         {label}
       </label>
       {children}
-      {hint && !error && <p className="mt-1 text-xs text-ink/60">{hint}</p>}
+      {hint && !error && <p className="mt-1 text-xs text-muted">{hint}</p>}
       {error && (
         <p id={`${id}-error`} className="mt-1 text-xs text-red-700">
           {error}

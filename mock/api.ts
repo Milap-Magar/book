@@ -24,8 +24,8 @@ type StoredDownload = DownloadRecord & { userId: number }
 type Json = Record<string, unknown>
 
 export const MOCK_ACCOUNTS = {
-  admin: { email: 'admin@bookhub.dev', password: 'admin12345' },
-  student: { email: 'student@bookhub.dev', password: 'student123' },
+  admin: { email: 'admin@shelfmallow.dev', password: 'admin12345' },
+  student: { email: 'student@shelfmallow.dev', password: 'student123' },
 }
 
 const now = () => new Date().toISOString()
@@ -45,7 +45,7 @@ const categories: Category[] = [
 const users: StoredUser[] = [
   { id: 1, ...MOCK_ACCOUNTS.admin, displayName: 'Maya Admin', role: 'ADMIN', enabled: true, createdAt: daysAgo(120) },
   { id: 2, ...MOCK_ACCOUNTS.student, displayName: 'Sam Student', role: 'USER', enabled: true, createdAt: daysAgo(40) },
-  { id: 3, email: 'riya@bookhub.dev', password: 'riya12345', displayName: 'Riya Sharma', role: 'USER', enabled: true, createdAt: daysAgo(25) },
+  { id: 3, email: 'riya@shelfmallow.dev', password: 'riya12345', displayName: 'Riya Sharma', role: 'USER', enabled: true, createdAt: daysAgo(25) },
 ]
 
 const seed = JSON.parse(readFileSync(resolve(process.cwd(), 'mock/books.json'), 'utf8')) as SeedBook[]
@@ -159,7 +159,7 @@ function readBody(req: IncomingMessage): Promise<Buffer> {
 /** A one-page PDF, so "Read" and "Download" open something real. */
 function samplePdf(title: string): Buffer {
   const text = title.replace(/[()\\]/g, '').slice(0, 60)
-  const stream = `BT /F1 20 Tf 60 720 Td (${text}) Tj 0 -32 Td /F1 12 Tf (Sample file from the BookHub mock API.) Tj ET`
+  const stream = `BT /F1 20 Tf 60 720 Td (${text}) Tj 0 -32 Td /F1 12 Tf (Sample file from the Shelfmallow mock API.) Tj ET`
   const objects = [
     '<< /Type /Catalog /Pages 2 0 R >>',
     '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
@@ -203,8 +203,8 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   // ── Mock-only helpers ────────────────────────────────────────────────
   if (path === '/__mock/file.pdf') {
     const disposition = query.get('disposition') === 'inline' ? 'inline' : 'attachment'
-    res.writeHead(200, { 'content-type': 'application/pdf', 'content-disposition': `${disposition}; filename="bookhub-sample.pdf"` })
-    return res.end(samplePdf(query.get('title') ?? 'BookHub'))
+    res.writeHead(200, { 'content-type': 'application/pdf', 'content-disposition': `${disposition}; filename="shelfmallow-sample.pdf"` })
+    return res.end(samplePdf(query.get('title') ?? 'Shelfmallow'))
   }
   const link = (title: string) => ({
     url: `/api/v1/__mock/file.pdf?disposition=${query.get('disposition') ?? 'attachment'}&title=${encodeURIComponent(title)}`,
@@ -499,7 +499,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 
 export function mockApi(): Plugin {
   return {
-    name: 'bookhub-mock-api',
+    name: 'shelfmallow-mock-api',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (!req.url?.startsWith('/api/v1')) return next()

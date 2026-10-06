@@ -24,7 +24,7 @@ export function ResourceItem({ resource, badges, children }: ResourceItemProps) 
             <Badge>{resourceTypeLabel(resource.type)}</Badge>
             {badges}
           </div>
-          <p className="mt-1 text-xs text-ink/60">
+          <p className="mt-1 text-xs text-muted">
             {resource.category.name} · {resource.uploader.displayName} · {formatDate(resource.createdAt)} ·{' '}
             {formatBytes(resource.file.sizeBytes)}
           </p>

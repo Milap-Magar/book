@@ -134,7 +134,7 @@ function FileUpload({ bookId, kind, label, accept, hint, current }: FileUploadPr
           event.target.value = ''
         }}
       />
-      {upload.isPending && <p className="mt-1 text-xs text-ink/60">Uploading…</p>}
+      {upload.isPending && <p className="mt-1 text-xs text-muted">Uploading…</p>}
       {upload.isSuccess && (
         <p role="status" className="mt-1 text-xs text-green-700">
           Uploaded.

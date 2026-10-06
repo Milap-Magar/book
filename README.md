@@ -1,11 +1,20 @@
-# BookHub web
+# Shelfmallow web
 
-The React frontend for BookHub, a platform where students browse books and share study resources.
+The React frontend for Shelfmallow, a platform where students browse books and share study resources.
 The Spring Boot API lives in a separate repository (`java-book-api`).
 
 ## Stack
 
-React 19, TypeScript, Vite, React Router, TanStack Query, Axios, Tailwind CSS, React Hook Form and Zod.
+React 19, TypeScript, Vite, React Router, TanStack Query, Axios, Tailwind CSS, React Hook Form, Zod
+and Motion (scroll reveals on the landing pages only).
+
+## Design
+
+The look is claymorphism. Tokens live in `src/styles/tokens.css`, the clay surfaces (`clay-sm`,
+`clay`, `clay-lg`, `clay-well`, `clay-input`, `clay-btn`) in `src/styles/clay.css`. The logo is
+`src/components/brand/Logo.tsx` (and `public/favicon.svg`), book covers are drawn by
+`src/components/clay/ClayBook.tsx` around the `coverUrl` the API returns, and the illustrations
+in `src/components/illustrations/` are inline SVG built around one mascot.
 
 ## Run it
 
@@ -32,8 +41,8 @@ the dev server restarts. The login page shows one-click demo accounts:
 
 | Role | Email | Password |
 |---|---|---|
-| Student | `student@bookhub.dev` | `student123` |
-| Admin | `admin@bookhub.dev` | `admin12345` |
+| Student | `student@shelfmallow.dev` | `student123` |
+| Admin | `admin@shelfmallow.dev` | `admin12345` |
 
 The mock is never part of a production build, and nothing in `src/` imports it.
 

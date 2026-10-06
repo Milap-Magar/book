@@ -1,0 +1,81 @@
+/*
+ * Shelfmallow design tokens.
+ * Colour follows 60-30-10: cream paper (60), white clay surfaces (30), grape for actions (10).
+ * The pastels are for tinted surfaces and illustrations, never for text.
+ */
+
+@theme {
+  --font-sans: 'Nunito Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fredoka Variable', 'Nunito Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #fbf5ec;
+  --color-ink: #33263f;
+  /* Secondary text. A solid colour, because `ink` at 60% opacity fails 4.5:1 on paper. */
+  --color-muted: #6a5d76;
+  --color-line: #efe4d8;
+  --color-cream: #fffaf1;
+
+  --color-brand-50: #f5f1ff;
+  --color-brand-100: #e9e1ff;
+  --color-brand-200: #d3c5fd;
+  --color-brand-500: #8163f2;
+  --color-brand-600: #6c4de6;
+  --color-brand-700: #5a3dcc;
+  --color-brand-900: #33246f;
+
+  --color-mint: #c2f0df;
+  --color-peach: #ffdcc7;
+  --color-sky: #cbe6ff;
+  --color-pink: #ffd3e4;
+  --color-butter: #fff0b8;
+
+  --text-hero: clamp(2.5rem, 1.6rem + 4.2vw, 4.5rem);
+  --text-hero--line-height: 1.04;
+  --text-title: clamp(1.9rem, 1.4rem + 2vw, 3rem);
+  --text-title--line-height: 1.1;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-pop: pop 0.25s var(--ease-spring);
+}
+
+:root {
+  /* Shadow tint as bare RGB channels, so each surface can set its own opacity. */
+  --clay-tint: 104 78 150;
+
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+}
+
+body {
+  @apply bg-paper font-sans text-ink antialiased;
+}
+
+/* The page wash sits on its own fixed layer: `background-attachment: fixed` on the body
+   would repaint the whole page on every scroll frame. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(55rem 38rem at 0% -10%, #ece4ff 0%, transparent 60%),
+    radial-gradient(48rem 36rem at 100% 0%, #ffe3ee 0%, transparent 55%),
+    radial-gradient(50rem 40rem at 50% 110%, #dff6ec 0%, transparent 60%);
+}
+
+h1,
+h2,
+h3 {
+  @apply font-display font-semibold tracking-tight;
+}
+
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-brand-600;
+}

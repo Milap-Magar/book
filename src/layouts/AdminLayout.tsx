@@ -19,7 +19,7 @@ export function AdminLayout() {
             to={link.to}
             end={link.end}
             className={({ isActive }) =>
-              `px-4 py-1.5 text-sm font-bold ${isActive ? 'clay-sm text-brand-700' : 'rounded-2xl text-ink/60 hover:text-ink'}`
+              `px-4 py-1.5 text-sm font-bold ${isActive ? 'clay-sm text-brand-700' : 'rounded-2xl text-muted hover:text-ink'}`
             }
           >
             {link.label}

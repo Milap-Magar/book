@@ -2,6 +2,7 @@ import { Button } from '@/components/Button'
 import { PageHeader } from '@/components/Misc'
 import { Pagination } from '@/components/Pagination'
 import { SearchInput } from '@/components/SearchInput'
+import { BookGridSkeleton } from '@/components/Skeleton'
 import { EmptyState, QueryState } from '@/components/States'
 import { useBooks } from '@/features/books/api'
 import { BookGrid } from '@/features/books/BookCard'
@@ -62,6 +63,7 @@ export function BooksPage() {
 
       <QueryState
         query={books}
+        loading={<BookGridSkeleton />}
         isEmpty={(data) => data.content.length === 0}
         empty={
           filtered ? (

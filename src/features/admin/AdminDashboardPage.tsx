@@ -6,7 +6,7 @@ import { useAdminStats } from '@/features/admin/api'
 function StatCard({ label, value, to }: { label: string; value: number; to: string }) {
   return (
     <Link to={to} className="clay clay-lift block p-5">
-      <p className="text-sm font-semibold text-ink/60">{label}</p>
+      <p className="text-sm font-semibold text-muted">{label}</p>
       <p className="mt-1 font-display text-4xl font-semibold text-brand-700">{value}</p>
     </Link>
   )

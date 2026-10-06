@@ -1,69 +1,89 @@
+import type { ComponentType } from 'react'
 import { createBrowserRouter } from 'react-router'
 import { NotFoundPage, RouteErrorPage } from '@/app/ErrorPages'
-import { DashboardPage, MyDownloadsPage, ProfilePage } from '@/features/account/AccountPages'
-import { AdminBookFormPage } from '@/features/admin/AdminBookFormPage'
-import { AdminBooksPage } from '@/features/admin/AdminBooksPage'
-import { AdminCategoriesPage } from '@/features/admin/AdminCategoriesPage'
-import { AdminDashboardPage } from '@/features/admin/AdminDashboardPage'
-import { AdminResourcesPage } from '@/features/admin/AdminResourcesPage'
-import { AdminUsersPage } from '@/features/admin/AdminUsersPage'
-import { LoginPage, RegisterPage } from '@/features/auth/AuthPages'
-import { BookDetailPage } from '@/features/books/BookDetailPage'
-import { BooksPage } from '@/features/books/BooksPage'
-import { HomePage } from '@/features/home/HomePage'
-import { MyUploadsPage } from '@/features/resources/MyUploadsPage'
-import { ResourcesPage } from '@/features/resources/ResourcesPage'
-import { UploadResourcePage } from '@/features/resources/UploadResourcePage'
-import { AdminLayout } from '@/layouts/AdminLayout'
+import { PageSkeleton } from '@/components/Skeleton'
 import { AppLayout } from '@/layouts/AppLayout'
 import { RequireAdmin, RequireAuth } from '@/layouts/guards'
+import { MarketingLayout } from '@/layouts/MarketingLayout'
+
+/**
+ * Every page is its own chunk, fetched when its route is first visited: a visitor on the
+ * landing page never downloads the admin screens. `page` adapts a module with named
+ * exports to what React Router's `lazy` expects.
+ */
+function page<Name extends string>(load: () => Promise<Record<Name, ComponentType>>, name: Name) {
+  return async () => ({ Component: (await load())[name] })
+}
+
+const landing = () => import('@/features/landing/LandingPage')
+const auth = () => import('@/features/auth/AuthPages')
+const account = () => import('@/features/account/AccountPages')
 
 export const router = createBrowserRouter([
   {
-    element: <AppLayout />,
     errorElement: <RouteErrorPage />,
+    HydrateFallback: () => (
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <PageSkeleton />
+      </div>
+    ),
     children: [
-      // Public
-      { index: true, element: <HomePage /> },
-      { path: 'books', element: <BooksPage /> },
-      { path: 'books/:id', element: <BookDetailPage /> },
-      { path: 'resources', element: <ResourcesPage /> },
-      { path: 'login', element: <LoginPage /> },
-      { path: 'register', element: <RegisterPage /> },
-
-      // Signed-in users
+      // Landing pages and sign-in
       {
-        element: <RequireAuth />,
+        element: <MarketingLayout />,
         children: [
-          { path: 'dashboard', element: <DashboardPage /> },
-          { path: 'profile', element: <ProfilePage /> },
-          { path: 'uploads', element: <MyUploadsPage /> },
-          { path: 'uploads/new', element: <UploadResourcePage /> },
-          { path: 'downloads', element: <MyDownloadsPage /> },
+          { index: true, lazy: page(landing, 'LandingPage') },
+          { path: 'genres', lazy: page(() => import('@/features/landing/GenresPage'), 'GenresPage') },
+          { path: 'features', lazy: page(() => import('@/features/landing/FeaturesPage'), 'FeaturesPage') },
+          { path: 'pricing', lazy: page(() => import('@/features/landing/PricingPage'), 'PricingPage') },
+          { path: 'login', lazy: page(auth, 'LoginPage') },
+          { path: 'register', lazy: page(auth, 'RegisterPage') },
+        ],
+      },
 
-          // Admins
+      {
+        element: <AppLayout />,
+        children: [
+          // Public library
+          { path: 'books', lazy: page(() => import('@/features/books/BooksPage'), 'BooksPage') },
+          { path: 'books/:id', lazy: page(() => import('@/features/books/BookDetailPage'), 'BookDetailPage') },
+          { path: 'resources', lazy: page(() => import('@/features/resources/ResourcesPage'), 'ResourcesPage') },
+
+          // Signed-in users
           {
-            path: 'admin',
-            element: <RequireAdmin />,
+            element: <RequireAuth />,
             children: [
+              { path: 'dashboard', lazy: page(account, 'DashboardPage') },
+              { path: 'profile', lazy: page(account, 'ProfilePage') },
+              { path: 'downloads', lazy: page(account, 'MyDownloadsPage') },
+              { path: 'uploads', lazy: page(() => import('@/features/resources/MyUploadsPage'), 'MyUploadsPage') },
+              { path: 'uploads/new', lazy: page(() => import('@/features/resources/UploadResourcePage'), 'UploadResourcePage') },
+
+              // Admins
               {
-                element: <AdminLayout />,
+                path: 'admin',
+                element: <RequireAdmin />,
                 children: [
-                  { index: true, element: <AdminDashboardPage /> },
-                  { path: 'resources', element: <AdminResourcesPage /> },
-                  { path: 'books', element: <AdminBooksPage /> },
-                  { path: 'books/new', element: <AdminBookFormPage /> },
-                  { path: 'books/:id/edit', element: <AdminBookFormPage /> },
-                  { path: 'categories', element: <AdminCategoriesPage /> },
-                  { path: 'users', element: <AdminUsersPage /> },
+                  {
+                    lazy: page(() => import('@/layouts/AdminLayout'), 'AdminLayout'),
+                    children: [
+                      { index: true, lazy: page(() => import('@/features/admin/AdminDashboardPage'), 'AdminDashboardPage') },
+                      { path: 'resources', lazy: page(() => import('@/features/admin/AdminResourcesPage'), 'AdminResourcesPage') },
+                      { path: 'books', lazy: page(() => import('@/features/admin/AdminBooksPage'), 'AdminBooksPage') },
+                      { path: 'books/new', lazy: page(() => import('@/features/admin/AdminBookFormPage'), 'AdminBookFormPage') },
+                      { path: 'books/:id/edit', lazy: page(() => import('@/features/admin/AdminBookFormPage'), 'AdminBookFormPage') },
+                      { path: 'categories', lazy: page(() => import('@/features/admin/AdminCategoriesPage'), 'AdminCategoriesPage') },
+                      { path: 'users', lazy: page(() => import('@/features/admin/AdminUsersPage'), 'AdminUsersPage') },
+                    ],
+                  },
                 ],
               },
             ],
           },
+
+          { path: '*', element: <NotFoundPage /> },
         ],
       },
-
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
 ])
