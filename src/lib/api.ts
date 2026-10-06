@@ -3,7 +3,8 @@ import type { UseFormSetError, FieldValues, Path } from 'react-hook-form'
 import { session } from '@/lib/session'
 import type { ApiErrorBody, AuthResponse } from '@/types/api'
 
-export const API_BASE = import.meta.env.VITE_API_URL ?? '/api/v1'
+// Trailing slash stripped so `${API_BASE}/auth/refresh` never becomes `/v1//auth/refresh`.
+export const API_BASE = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/+$/, '')
 
 export const api = axios.create({ baseURL: API_BASE })
 
