@@ -5,7 +5,7 @@ import { PageSkeleton } from '@/components/Skeleton'
 import { SiteFooter } from '@/layouts/SiteFooter'
 import { SiteHeader } from '@/layouts/SiteHeader'
 
-/** Landing pages and sign-in: wide sections, scroll animation, full footer. */
+/** Landing pages: wide sections, scroll animation, full footer. */
 export function MarketingLayout() {
   return (
     <MotionProvider>

@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router'
 import { NotFoundPage, RouteErrorPage } from '@/app/ErrorPages'
 import { PageSkeleton } from '@/components/Skeleton'
 import { AppLayout } from '@/layouts/AppLayout'
+import { AuthLayout } from '@/layouts/AuthLayout'
 import { RequireAdmin, RequireAuth } from '@/layouts/guards'
 import { MarketingLayout } from '@/layouts/MarketingLayout'
 
@@ -28,7 +29,7 @@ export const router = createBrowserRouter([
       </div>
     ),
     children: [
-      // Landing pages and sign-in
+      // Landing pages
       {
         element: <MarketingLayout />,
         children: [
@@ -36,6 +37,13 @@ export const router = createBrowserRouter([
           { path: 'genres', lazy: page(() => import('@/features/landing/GenresPage'), 'GenresPage') },
           { path: 'features', lazy: page(() => import('@/features/landing/FeaturesPage'), 'FeaturesPage') },
           { path: 'pricing', lazy: page(() => import('@/features/landing/PricingPage'), 'PricingPage') },
+        ],
+      },
+
+      // Sign-in, without the site header and footer
+      {
+        element: <AuthLayout />,
+        children: [
           { path: 'login', lazy: page(auth, 'LoginPage') },
           { path: 'register', lazy: page(auth, 'RegisterPage') },
         ],
