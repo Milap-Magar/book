@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { ConfirmButton, Notice } from '@/components/Clay'
 import { PageHeader, StatusBadge } from '@/components/Misc'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState, FormError, QueryState } from '@/components/States'
@@ -20,7 +21,7 @@ export function MyUploadsPage() {
 
   return (
     <>
-      <PageHeader title="My uploads" subtitle="Everything you have shared, with its review status." action={uploadLink} />
+      <PageHeader icon="upload" tone="sky" title="My uploads" subtitle="Everything you have shared, with its review status." action={uploadLink} />
       <FormError error={remove.error} />
 
       <QueryState
@@ -34,21 +35,12 @@ export function MyUploadsPage() {
               {data.content.map((resource) => (
                 <ResourceItem key={resource.id} resource={resource} badges={<StatusBadge status={resource.status} />}>
                   {resource.status === 'REJECTED' && resource.rejectionReason && (
-                    <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-800">
-                      <span className="font-medium">Reason:</span> {resource.rejectionReason}
-                    </p>
+                    <Notice tone="danger" className="mt-3">
+                      Reason: <span className="font-normal">{resource.rejectionReason}</span>
+                    </Notice>
                   )}
-                  <div className="mt-3 border-t border-line pt-3">
-                    <button
-                      type="button"
-                      className="text-sm text-red-700 underline disabled:opacity-60"
-                      disabled={remove.isPending}
-                      onClick={() => {
-                        if (window.confirm(`Delete "${resource.title}"? This cannot be undone.`)) remove.mutate(resource.id)
-                      }}
-                    >
-                      Delete
-                    </button>
+                  <div className="mt-4 border-t-2 border-line pt-3">
+                    <ConfirmButton disabled={remove.isPending} onConfirm={() => remove.mutate(resource.id)} />
                   </div>
                 </ResourceItem>
               ))}

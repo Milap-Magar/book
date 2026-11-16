@@ -7,7 +7,7 @@ import { Reveal } from '@/components/motion/Reveal'
 import { BookGridSkeleton } from '@/components/Skeleton'
 import { EmptyState, QueryState } from '@/components/States'
 import { buttonClass } from '@/components/buttonStyles'
-import { useBooks } from '@/features/books/api'
+import { useLatestBooks } from '@/features/books/api'
 import { BookGrid } from '@/features/books/BookCard'
 import { useCategories } from '@/features/categories/api'
 import { HeroShelf } from '@/features/landing/HeroShelf'
@@ -30,9 +30,13 @@ export function LandingPage() {
   const navigate = useNavigate()
   const { status } = useSession()
   const [search, setSearch] = useState('')
-  const latest = useBooks({ sort: 'createdAt,desc', size: 5 })
-  const topRated = useBooks({ sort: 'ratingAvg,desc', size: 3 })
+  // One request feeds the whole page (and later the Books page, which opens on the same query):
+  // the newest books for "Recently added", and the best rated among them for the hero.
+  const latest = useLatestBooks()
   const categories = useCategories()
+  const topRated = latest.data
+    ? [...latest.data.content].sort((a, b) => b.ratingAvg - a.ratingAvg || b.ratingCount - a.ratingCount).slice(0, 3)
+    : undefined
 
   const stats = [
     { value: latest.data?.totalElements ?? '–', label: 'books on the shelf' },
@@ -85,7 +89,7 @@ export function LandingPage() {
           </div>
         </div>
 
-        <HeroShelf books={topRated.data?.content} />
+        <HeroShelf books={topRated} />
       </section>
 
       <Reveal>
@@ -162,7 +166,7 @@ export function LandingPage() {
           isEmpty={(data) => data.content.length === 0}
           empty={<EmptyState title="No books yet" hint="Books added by an admin will appear here." />}
         >
-          {(data) => <BookGrid books={data.content} />}
+          {(data) => <BookGrid books={data.content.slice(0, 5)} />}
         </QueryState>
       </section>
 

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/Button'
+import { Notice } from '@/components/Clay'
+import { segmentClass } from '@/components/buttonStyles'
 import { PageHeader, StatusBadge } from '@/components/Misc'
 import { Pagination } from '@/components/Pagination'
 import { EmptyState, FormError, QueryState } from '@/components/States'
@@ -22,7 +24,7 @@ function PendingActions({ resource }: { resource: Resource }) {
   const reasonValid = reason.trim().length >= 5
 
   return (
-    <div className="mt-3 border-t border-line pt-3">
+    <div className="mt-4 border-t-2 border-line pt-4">
       {!rejecting ? (
         <div className="flex gap-2">
           <Button size="sm" loading={moderate.isPending} onClick={() => moderate.mutate({ id: resource.id, action: 'approve' })}>
@@ -39,7 +41,7 @@ function PendingActions({ resource }: { resource: Resource }) {
             if (reasonValid) moderate.mutate({ id: resource.id, action: 'reject', reason: reason.trim() })
           }}
         >
-          <label htmlFor={`reason-${resource.id}`} className="mb-1 block text-sm font-medium">
+          <label htmlFor={`reason-${resource.id}`} className="mb-1.5 block text-sm font-bold">
             Reason shown to the uploader
           </label>
           <textarea
@@ -48,7 +50,7 @@ function PendingActions({ resource }: { resource: Resource }) {
             maxLength={500}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            className="mb-2 block w-full clay-input"
+            className="mb-3 block w-full clay-input"
           />
           <div className="flex gap-2">
             <Button type="submit" size="sm" variant="danger" loading={moderate.isPending} disabled={!reasonValid}>
@@ -74,9 +76,9 @@ export function AdminResourcesPage() {
 
   return (
     <>
-      <PageHeader title="Moderation" subtitle="Use Read to check a file before you decide." />
+      <PageHeader icon="shield" tone="mint" title="Moderation" subtitle="Use Read to check a file before you decide." />
 
-      <div role="tablist" aria-label="Status" className="mb-6 flex gap-2">
+      <div role="tablist" aria-label="Status" className="clay-well mb-6 inline-flex gap-1 p-1.5">
         {TABS.map((tab) => (
           <button
             key={tab.status}
@@ -84,9 +86,7 @@ export function AdminResourcesPage() {
             role="tab"
             aria-selected={tab.status === status}
             onClick={() => set({ status: tab.status === 'PENDING' ? undefined : tab.status })}
-            className={`clay-btn px-4 py-1.5 text-sm ${
-              tab.status === status ? 'bg-brand-600 font-semibold text-white [--clay-tint:108_77_230]' : 'bg-white text-ink/70 hover:text-ink'
-            }`}
+            className={segmentClass(tab.status === status)}
           >
             {tab.label}
           </button>
@@ -110,9 +110,9 @@ export function AdminResourcesPage() {
                 <ResourceItem key={resource.id} resource={resource} badges={<StatusBadge status={resource.status} />}>
                   {resource.status === 'PENDING' && <PendingActions resource={resource} />}
                   {resource.status === 'REJECTED' && resource.rejectionReason && (
-                    <p className="mt-3 rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-800">
-                      <span className="font-medium">Reason:</span> {resource.rejectionReason}
-                    </p>
+                    <Notice tone="danger" className="mt-3">
+                      Reason: <span className="font-normal">{resource.rejectionReason}</span>
+                    </Notice>
                   )}
                   {resource.reviewedAt && <p className="mt-2 text-xs text-muted">Reviewed {formatDate(resource.reviewedAt)}</p>}
                 </ResourceItem>

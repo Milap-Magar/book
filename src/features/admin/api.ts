@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { features } from '@/lib/features'
 import { cleanParams } from '@/lib/format'
 import { resourceKeys } from '@/features/resources/api'
 import type { AdminStats, PageParams, PageResponse, Resource, ResourceStatus, Role, User } from '@/types/api'
@@ -31,13 +32,19 @@ export function useUpdateUser() {
   return useMutation({
     mutationFn: async ({ id, ...changes }: { id: number; role?: Role; enabled?: boolean }) =>
       (await api.patch<User>(`/admin/users/${id}`, changes)).data,
-    onSuccess: () => client.invalidateQueries({ queryKey: adminKeys.users }),
+    // The response is the changed user: swap it into every cached page instead of refetching them.
+    onSuccess: (saved) => {
+      client.setQueriesData<PageResponse<User>>({ queryKey: adminKeys.users }, (page) =>
+        page ? { ...page, content: page.content.map((user) => (user.id === saved.id ? saved : user)) } : page,
+      )
+    },
   })
 }
 
 export function useAdminResources(params: PageParams & { status: ResourceStatus }) {
   return useQuery({
     queryKey: resourceKeys.admin(params),
+    enabled: features.files,
     queryFn: async () => (await api.get<PageResponse<Resource>>('/admin/resources', { params })).data,
     placeholderData: keepPreviousData,
   })

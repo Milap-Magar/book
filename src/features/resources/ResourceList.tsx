@@ -24,14 +24,17 @@ export function ResourceItem({ resource, badges, children }: ResourceItemProps) 
             <Badge>{resourceTypeLabel(resource.type)}</Badge>
             {badges}
           </div>
-          <p className="mt-1 text-xs text-muted">
-            {resource.category.name} · {resource.uploader.displayName} · {formatDate(resource.createdAt)} ·{' '}
-            {formatBytes(resource.file.sizeBytes)}
+          <p className="mt-2 flex flex-wrap gap-1.5 text-xs font-bold text-muted">
+            {[resource.category.name, resource.uploader.displayName, formatDate(resource.createdAt), formatBytes(resource.file.sizeBytes)].map((fact, index) => (
+              <span key={index} className="clay-well rounded-full px-2.5 py-1">
+                {fact}
+              </span>
+            ))}
           </p>
           {resource.book && (
-            <p className="mt-1 text-sm">
+            <p className="mt-2 text-sm">
               For{' '}
-              <Link to={`/books/${resource.book.id}`} className="text-brand-700 underline">
+              <Link to={`/books/${resource.book.id}`} className="font-bold text-brand-700 underline decoration-2 underline-offset-4">
                 {resource.book.title}
               </Link>
             </p>

@@ -1,5 +1,5 @@
 import { Link, useRouteError } from 'react-router'
-import { NotFoundArt } from '@/components/illustrations/Scenes'
+import { EmptyArt, NotFoundArt } from '@/components/illustrations/Scenes'
 import { EmptyState } from '@/components/States'
 import { buttonClass } from '@/components/buttonStyles'
 
@@ -21,5 +21,24 @@ export function RouteErrorPage() {
     <div className="mx-auto max-w-xl px-4 py-16">
       <EmptyState art={<NotFoundArt className="w-36" />} title="Something went wrong" hint="Reload the page. If it keeps happening, try again later." action={homeLink} />
     </div>
+  )
+}
+
+/**
+ * Stands in for the pages that need file storage on the server (resources, uploads, downloads)
+ * until the API has it. Old links and bookmarks land here instead of on a page full of errors.
+ */
+export function ComingSoonPage() {
+  return (
+    <EmptyState
+      art={<EmptyArt className="w-36" />}
+      title="This shelf is still being built"
+      hint="Sharing notes and downloading files are on the way. Books, subjects and reviews are open now."
+      action={
+        <Link to="/books" className={buttonClass('primary')}>
+          Browse books
+        </Link>
+      }
+    />
   )
 }

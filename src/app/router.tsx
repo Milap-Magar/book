@@ -1,11 +1,12 @@
 import type { ComponentType } from 'react'
 import { createBrowserRouter } from 'react-router'
-import { NotFoundPage, RouteErrorPage } from '@/app/ErrorPages'
+import { ComingSoonPage, NotFoundPage, RouteErrorPage } from '@/app/ErrorPages'
 import { PageSkeleton } from '@/components/Skeleton'
 import { AppLayout } from '@/layouts/AppLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { RequireAdmin, RequireAuth } from '@/layouts/guards'
 import { MarketingLayout } from '@/layouts/MarketingLayout'
+import { features } from '@/lib/features'
 
 /**
  * Every page is its own chunk, fetched when its route is first visited: a visitor on the
@@ -14,6 +15,14 @@ import { MarketingLayout } from '@/layouts/MarketingLayout'
  */
 function page<Name extends string>(load: () => Promise<Record<Name, ComponentType>>, name: Name) {
   return async () => ({ Component: (await load())[name] })
+}
+
+/**
+ * Pages that need file storage on the server. Without it they are replaced by one static page,
+ * so their code is never downloaded and their requests are never sent.
+ */
+function filePage<Name extends string>(load: () => Promise<Record<Name, ComponentType>>, name: Name) {
+  return features.files ? { lazy: page(load, name) } : { element: <ComingSoonPage /> }
 }
 
 const landing = () => import('@/features/landing/LandingPage')
@@ -55,7 +64,7 @@ export const router = createBrowserRouter([
           // Public library
           { path: 'books', lazy: page(() => import('@/features/books/BooksPage'), 'BooksPage') },
           { path: 'books/:id', lazy: page(() => import('@/features/books/BookDetailPage'), 'BookDetailPage') },
-          { path: 'resources', lazy: page(() => import('@/features/resources/ResourcesPage'), 'ResourcesPage') },
+          { path: 'resources', ...filePage(() => import('@/features/resources/ResourcesPage'), 'ResourcesPage') },
 
           // Signed-in users
           {
@@ -63,9 +72,9 @@ export const router = createBrowserRouter([
             children: [
               { path: 'dashboard', lazy: page(account, 'DashboardPage') },
               { path: 'profile', lazy: page(account, 'ProfilePage') },
-              { path: 'downloads', lazy: page(account, 'MyDownloadsPage') },
-              { path: 'uploads', lazy: page(() => import('@/features/resources/MyUploadsPage'), 'MyUploadsPage') },
-              { path: 'uploads/new', lazy: page(() => import('@/features/resources/UploadResourcePage'), 'UploadResourcePage') },
+              { path: 'downloads', ...filePage(account, 'MyDownloadsPage') },
+              { path: 'uploads', ...filePage(() => import('@/features/resources/MyUploadsPage'), 'MyUploadsPage') },
+              { path: 'uploads/new', ...filePage(() => import('@/features/resources/UploadResourcePage'), 'UploadResourcePage') },
 
               // Admins
               {
@@ -76,7 +85,7 @@ export const router = createBrowserRouter([
                     lazy: page(() => import('@/layouts/AdminLayout'), 'AdminLayout'),
                     children: [
                       { index: true, lazy: page(() => import('@/features/admin/AdminDashboardPage'), 'AdminDashboardPage') },
-                      { path: 'resources', lazy: page(() => import('@/features/admin/AdminResourcesPage'), 'AdminResourcesPage') },
+                      { path: 'resources', ...filePage(() => import('@/features/admin/AdminResourcesPage'), 'AdminResourcesPage') },
                       { path: 'books', lazy: page(() => import('@/features/admin/AdminBooksPage'), 'AdminBooksPage') },
                       { path: 'books/new', lazy: page(() => import('@/features/admin/AdminBookFormPage'), 'AdminBookFormPage') },
                       { path: 'books/:id/edit', lazy: page(() => import('@/features/admin/AdminBookFormPage'), 'AdminBookFormPage') },

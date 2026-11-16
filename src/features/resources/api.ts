@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { features } from '@/lib/features'
 import { cleanParams } from '@/lib/format'
 import type {
   Disposition,
@@ -37,11 +38,15 @@ export function resourceTypeLabel(type: ResourceType): string {
   return RESOURCE_TYPES.find((option) => option.value === type)?.label ?? type
 }
 
+// Every query here is switched off unless the API has file storage (lib/features.ts),
+// so a page that still renders one of these hooks by accident costs the server nothing.
+
 /** Approved resources only; this is the public listing. */
 export function useResources(params: ResourceListParams) {
   const clean = cleanParams(params)
   return useQuery({
     queryKey: resourceKeys.public(clean),
+    enabled: features.files,
     queryFn: async () => (await api.get<PageResponse<Resource>>('/resources', { params: clean })).data,
     placeholderData: keepPreviousData,
   })
@@ -52,6 +57,7 @@ export function useMyResources(params: PageParams & { status?: ResourceStatus })
   const clean = cleanParams(params)
   return useQuery({
     queryKey: resourceKeys.mine(clean),
+    enabled: features.files,
     queryFn: async () => (await api.get<PageResponse<Resource>>('/users/me/resources', { params: clean })).data,
     placeholderData: keepPreviousData,
   })
@@ -72,6 +78,8 @@ export function useUploadResource() {
       // The backend reads this part with @RequestPart, which needs the JSON content type on the part.
       form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }))
       const { data } = await api.post<Resource>('/resources', form, {
+        // No time limit: a large file on a slow line is not a hung request.
+        timeout: 0,
         onUploadProgress: (event) => {
           if (event.total) onProgress?.(Math.round((event.loaded / event.total) * 100))
         },

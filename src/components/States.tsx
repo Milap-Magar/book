@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import type { UseQueryResult } from '@tanstack/react-query'
+import { buttonClass } from '@/components/buttonStyles'
+import { Mallow } from '@/components/illustrations/Mallow'
 import { EmptyArt } from '@/components/illustrations/Scenes'
 import { errorMessage } from '@/lib/api'
 
@@ -42,10 +44,11 @@ export function EmptyState({ title, hint, action, art }: EmptyStateProps) {
 
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   return (
-    <div role="alert" className="clay-well bg-red-50 px-6 py-8 text-center">
-      <p className="text-sm text-red-800">{errorMessage(error)}</p>
+    <div role="alert" className="clay tint-rose flex flex-col items-center bg-rose-50 px-6 py-8 text-center">
+      <Mallow mood="puzzled" className="w-20" />
+      <p className="mt-2 font-semibold text-rose-900">{errorMessage(error)}</p>
       {onRetry && (
-        <button type="button" onClick={onRetry} className="mt-1 min-h-11 px-3 text-sm font-bold text-red-800 underline">
+        <button type="button" onClick={onRetry} className={buttonClass('secondary', 'md', 'mt-4')}>
           Try again
         </button>
       )}
@@ -57,7 +60,7 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
 export function FormError({ error }: { error: unknown }) {
   if (!error) return null
   return (
-    <p role="alert" className="rounded-2xl bg-red-50 px-3 py-2 text-sm text-red-800">
+    <p role="alert" className="clay-well tint-rose bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-900">
       {errorMessage(error)}
     </p>
   )

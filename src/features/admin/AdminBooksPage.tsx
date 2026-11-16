@@ -1,21 +1,24 @@
 import { Link } from 'react-router'
-import { PageHeader } from '@/components/Misc'
+import { ConfirmButton, TableCard, Th, Toolbar } from '@/components/Clay'
+import { Badge, PageHeader, Stars } from '@/components/Misc'
 import { Pagination } from '@/components/Pagination'
 import { SearchInput } from '@/components/SearchInput'
 import { EmptyState, FormError, QueryState } from '@/components/States'
 import { buttonClass } from '@/components/buttonStyles'
-import { useBooks, useDeleteBook } from '@/features/books/api'
+import { NEWEST_FIRST, PAGE_SIZE, useBooks, useDeleteBook } from '@/features/books/api'
+import { features } from '@/lib/features'
 import { useListParams } from '@/lib/useListParams'
 
 export function AdminBooksPage() {
   const { page, get, set } = useListParams()
   const search = get('search')
-  const books = useBooks({ search, page, size: 20, sort: 'createdAt,desc' })
+  const books = useBooks({ search, page, size: PAGE_SIZE, sort: NEWEST_FIRST })
   const remove = useDeleteBook()
 
   return (
     <>
       <PageHeader
+        icon="book"
         title="Books"
         action={
           <Link to="/admin/books/new" className={buttonClass('primary')}>
@@ -23,10 +26,12 @@ export function AdminBooksPage() {
           </Link>
         }
       />
-      <div className="mb-4 max-w-sm">
+      <Toolbar className="max-w-md">
         <SearchInput label="Search books" placeholder="Search by title or author" value={search} onChange={(value) => set({ search: value })} />
+      </Toolbar>
+      <div className="mb-4 empty:hidden">
+        <FormError error={remove.error} />
       </div>
-      <FormError error={remove.error} />
 
       <QueryState
         query={books}
@@ -34,53 +39,48 @@ export function AdminBooksPage() {
         empty={<EmptyState title={search ? 'No books match your search' : 'No books yet'} />}
       >
         {(data) => (
-          <>
-            <div className="overflow-x-auto clay">
-              <table className="w-full text-left text-sm">
-                <thead className="border-b border-line text-xs text-muted uppercase">
-                  <tr>
-                    <th scope="col" className="px-4 py-3">Title</th>
-                    <th scope="col" className="px-4 py-3">Author</th>
-                    <th scope="col" className="px-4 py-3">Category</th>
-                    <th scope="col" className="px-4 py-3">File</th>
-                    <th scope="col" className="px-4 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {data.content.map((book) => (
-                    <tr key={book.id}>
-                      <td className="px-4 py-3">
-                        <Link to={`/books/${book.id}`} className="font-medium hover:underline">
-                          {book.title}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">{book.author}</td>
-                      <td className="px-4 py-3">{book.category?.name ?? '–'}</td>
-                      <td className="px-4 py-3">{book.hasFile ? 'Yes' : 'No'}</td>
-                      <td className="px-4 py-3 text-right whitespace-nowrap">
-                        <Link to={`/admin/books/${book.id}/edit`} className="text-brand-700 underline">
+          <div className={books.isPlaceholderData ? 'opacity-60 transition-opacity' : undefined}>
+            <TableCard>
+              <thead>
+                <tr>
+                  <Th>Title</Th>
+                  <Th>Author</Th>
+                  <Th>Subject</Th>
+                  <Th>Rating</Th>
+                  {features.files && <Th>File</Th>}
+                  <Th>
+                    <span className="sr-only">Actions</span>
+                  </Th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.content.map((book) => (
+                  <tr key={book.id}>
+                    <td>
+                      <Link to={`/books/${book.id}`} className="font-bold hover:text-brand-700 hover:underline">
+                        {book.title}
+                      </Link>
+                    </td>
+                    <td>{book.author}</td>
+                    <td>{book.category ? <Badge>{book.category.name}</Badge> : '–'}</td>
+                    <td className="whitespace-nowrap">
+                      {book.ratingCount > 0 ? <Stars value={book.ratingAvg} count={book.ratingCount} /> : <span className="text-muted">–</span>}
+                    </td>
+                    {features.files && <td>{book.hasFile ? <Badge tone="green">Attached</Badge> : <Badge tone="amber">None</Badge>}</td>}
+                    <td>
+                      <div className="flex items-center justify-end gap-1 whitespace-nowrap">
+                        <Link to={`/admin/books/${book.id}/edit`} className={buttonClass('secondary', 'sm')}>
                           Edit
                         </Link>
-                        <button
-                          type="button"
-                          className="ml-4 text-red-700 underline disabled:opacity-60"
-                          disabled={remove.isPending}
-                          onClick={() => {
-                            if (window.confirm(`Delete "${book.title}"? This cannot be undone.`)) remove.mutate(book.id)
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        <ConfirmButton disabled={remove.isPending} onConfirm={() => remove.mutate(book.id)} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </TableCard>
             <Pagination page={data.page} totalPages={data.totalPages} onChange={(next) => set({ page: next })} />
-          </>
+          </div>
         )}
       </QueryState>
     </>

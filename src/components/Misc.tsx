@@ -1,12 +1,25 @@
 import type { ReactNode } from 'react'
+import { ClayIcon, type GlyphName, type Tone as IconTone } from '@/components/illustrations/ClayIcon'
 import type { ResourceStatus } from '@/types/api'
 
-export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
+interface PageHeaderProps {
+  title: string
+  subtitle?: string
+  action?: ReactNode
+  /** A clay tile to the left of the title, so every page inside the app opens the same way. */
+  icon?: GlyphName
+  tone?: IconTone
+}
+
+export function PageHeader({ title, subtitle, action, icon, tone = 'brand' }: PageHeaderProps) {
   return (
-    <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 className="text-4xl">{title}</h1>
-        {subtitle && <p className="mt-1 text-muted">{subtitle}</p>}
+    <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
+      <div className="flex min-w-0 items-center gap-4">
+        {icon && <ClayIcon name={icon} tone={tone} size="md" className="hidden sm:inline-grid" />}
+        <div className="min-w-0">
+          <h1 className="text-4xl">{title}</h1>
+          {subtitle && <p className="mt-1 text-muted">{subtitle}</p>}
+        </div>
       </div>
       {action}
     </div>

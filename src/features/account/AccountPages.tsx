@@ -1,57 +1,28 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import type { ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router'
 import { z } from 'zod'
 import { Button } from '@/components/Button'
+import { ActionTile, Avatar, Notice, Panel, StatTile } from '@/components/Clay'
 import { Input } from '@/components/Field'
-import { ClayIcon, Glyph, type GlyphName, type Tone } from '@/components/illustrations/ClayIcon'
+import { Glyph, type GlyphName, type Tone } from '@/components/illustrations/ClayIcon'
 import { WelcomeArt } from '@/components/illustrations/Scenes'
-import { PageHeader, StatusBadge } from '@/components/Misc'
+import { Badge, PageHeader, StatusBadge } from '@/components/Misc'
 import { Pagination } from '@/components/Pagination'
-import { Skeleton } from '@/components/Skeleton'
+import { BookGridSkeleton, Skeleton } from '@/components/Skeleton'
 import { EmptyState, FormError, QueryState } from '@/components/States'
 import { buttonClass } from '@/components/buttonStyles'
 import { useMyDownloads, useUpdateProfile } from '@/features/account/api'
+import { useLatestBooks } from '@/features/books/api'
+import { BookGrid } from '@/features/books/BookCard'
+import { useCategories } from '@/features/categories/api'
 import { useMyResources } from '@/features/resources/api'
 import { applyFieldErrors } from '@/lib/api'
+import { features } from '@/lib/features'
 import { formatDate } from '@/lib/format'
 import { useSession } from '@/lib/session'
 import { useListParams } from '@/lib/useListParams'
-
-interface StatTileProps {
-  label: string
-  count: number | undefined
-  to: string
-  icon: GlyphName
-  tone: Tone
-}
-
-function StatTile({ label, count, to, icon, tone }: StatTileProps) {
-  return (
-    <Link to={to} className="clay clay-lift flex items-center gap-4 p-5">
-      <ClayIcon name={icon} tone={tone} size="md" />
-      <div>
-        <div className="font-display text-4xl leading-none font-semibold">{count ?? <Skeleton className="h-9 w-10" />}</div>
-        <p className="mt-1 text-sm font-bold text-muted">{label}</p>
-      </div>
-    </Link>
-  )
-}
-
-function Panel({ title, to, children }: { title: string; to: string; children: ReactNode }) {
-  return (
-    <section className="clay p-5 sm:p-6">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-xl">{title}</h2>
-        <Link to={to} className={buttonClass('ghost', 'sm')}>
-          View all
-        </Link>
-      </div>
-      {children}
-    </section>
-  )
-}
+import type { DownloadRecord } from '@/types/api'
 
 const panelLoading = (
   <div role="status" aria-label="Loading" className="space-y-2">
@@ -61,14 +32,21 @@ const panelLoading = (
   </div>
 )
 
-const ACTIONS: { to: string; label: string; hint: string; icon: GlyphName; tone: Tone }[] = [
+const viewAll = (to: string) => (
+  <Link to={to} className={buttonClass('ghost', 'sm')}>
+    View all
+  </Link>
+)
+
+const ACTIONS: { to: string; label: string; hint: string; icon: GlyphName; tone: Tone; needsFiles?: boolean }[] = [
   { to: '/books', label: 'Browse books', hint: 'Search the library', icon: 'search', tone: 'sky' },
-  { to: '/resources', label: 'Notes and papers', hint: 'Shared by students', icon: 'notes', tone: 'pink' },
+  { to: '/genres', label: 'Pick a subject', hint: 'Start from a genre', icon: 'flask', tone: 'mint' },
+  { to: '/resources', label: 'Notes and papers', hint: 'Shared by students', icon: 'notes', tone: 'pink', needsFiles: true },
   { to: '/profile', label: 'Edit profile', hint: 'Change your name', icon: 'user', tone: 'peach' },
 ]
 
-export function DashboardPage() {
-  const { user } = useSession()
+/** Uploads and downloads. Only rendered when the API has file storage. */
+function ActivityDashboard() {
   // The five newest rows; `totalElements` on the same response gives the totals.
   const uploads = useMyResources({ size: 5 })
   const downloads = useMyDownloads({ size: 5 })
@@ -77,28 +55,14 @@ export function DashboardPage() {
 
   return (
     <>
-      <section className="clay-lg tint-brand relative flex flex-wrap items-center gap-x-8 gap-y-4 overflow-hidden bg-brand-600 px-6 py-7 text-white sm:px-10">
-        <span aria-hidden="true" className="clay-blob tint-pink absolute -top-8 right-1/4 size-20 bg-pink" />
-        <span aria-hidden="true" className="clay-blob tint-butter absolute -bottom-6 left-1/2 size-14 bg-butter" />
-        <WelcomeArt className="relative w-28 shrink-0 sm:w-36" />
-        <div className="relative min-w-0 flex-1 basis-64">
-          <h1 className="text-title">Hello, {user?.displayName ?? 'there'}</h1>
-          <p className="mt-1 text-lg text-brand-100">Here is what is on your shelf.</p>
-        </div>
-        <Link to="/uploads/new" className={buttonClass('secondary', 'lg', 'relative')}>
-          <Glyph name="upload" className="size-5" />
-          Upload a resource
-        </Link>
-      </section>
-
       <div className="mt-6 grid gap-5 sm:grid-cols-3">
-        <StatTile label="My uploads" count={uploads.data?.totalElements} to="/uploads" icon="notes" tone="brand" />
-        <StatTile label="Waiting for review" count={pending.data?.totalElements} to="/uploads" icon="clock" tone="butter" />
-        <StatTile label="My downloads" count={downloads.data?.totalElements} to="/downloads" icon="download" tone="mint" />
+        <StatTile label="My uploads" value={uploads.data?.totalElements} to="/uploads" icon="notes" tone="brand" />
+        <StatTile label="Waiting for review" value={pending.data?.totalElements} to="/uploads" icon="clock" tone="butter" />
+        <StatTile label="My downloads" value={downloads.data?.totalElements} to="/downloads" icon="download" tone="mint" />
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
-        <Panel title="Recent uploads" to="/uploads">
+        <Panel title="Recent uploads" action={viewAll('/uploads')}>
           <QueryState
             query={uploads}
             loading={panelLoading}
@@ -131,7 +95,7 @@ export function DashboardPage() {
           </QueryState>
         </Panel>
 
-        <Panel title="Recent downloads" to="/downloads">
+        <Panel title="Recent downloads" action={viewAll('/downloads')}>
           <QueryState
             query={downloads}
             loading={panelLoading}
@@ -151,40 +115,104 @@ export function DashboardPage() {
             {(data) => (
               <ul className="space-y-2">
                 {data.content.map((item) => (
-                  <li key={item.id} className="clay-well flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                    <div className="min-w-0">
-                      {item.type === 'BOOK' ? (
-                        <Link to={`/books/${item.targetId}`} className="block truncate font-bold text-brand-700 hover:underline">
-                          {item.title}
-                        </Link>
-                      ) : (
-                        <p className="truncate font-bold">{item.title}</p>
-                      )}
-                      <p className="text-xs text-muted">{item.type === 'BOOK' ? 'Book' : 'Resource'}</p>
-                    </div>
-                    <span className="text-sm text-muted">{formatDate(item.downloadedAt)}</span>
-                  </li>
+                  <DownloadRow key={item.id} item={item} />
                 ))}
               </ul>
             )}
           </QueryState>
         </Panel>
       </div>
+    </>
+  )
+}
+
+/**
+ * What the dashboard shows while the API has books, subjects and reviews but no files yet.
+ * Both queries are the ones the landing page and the Books page use, so arriving here from
+ * either costs the server nothing.
+ */
+function ShelfDashboard({ memberSince }: { memberSince: string }) {
+  const books = useLatestBooks()
+  const categories = useCategories()
+
+  return (
+    <>
+      <div className="mt-6 grid gap-5 sm:grid-cols-3">
+        <StatTile label="Books on the shelf" value={books.data?.totalElements} to="/books" icon="book" tone="brand" />
+        <StatTile label="Subjects" value={categories.data?.length} to="/genres" icon="flask" tone="mint" />
+        <StatTile label="Member since" value={<span className="text-2xl">{memberSince}</span>} to="/profile" icon="heart" tone="pink" />
+      </div>
+
+      <Panel title="New on the shelf" action={viewAll('/books')} className="mt-6">
+        <QueryState
+          query={books}
+          loading={<BookGridSkeleton count={5} />}
+          isEmpty={(data) => data.content.length === 0}
+          empty={<EmptyState title="No books yet" hint="Books added by an admin will appear here." />}
+        >
+          {(data) => <BookGrid books={data.content.slice(0, 5)} />}
+        </QueryState>
+      </Panel>
+    </>
+  )
+}
+
+export function DashboardPage() {
+  const { user } = useSession()
+
+  return (
+    <>
+      <section className="clay-lg tint-brand relative flex flex-wrap items-center gap-x-8 gap-y-4 overflow-hidden bg-brand-600 px-6 py-7 text-white sm:px-10">
+        <span aria-hidden="true" className="clay-blob tint-pink absolute -top-8 right-1/4 size-20 bg-pink" />
+        <span aria-hidden="true" className="clay-blob tint-butter absolute -bottom-6 left-1/2 size-14 bg-butter" />
+        <WelcomeArt className="relative w-28 shrink-0 sm:w-36" />
+        <div className="relative min-w-0 flex-1 basis-64">
+          <h1 className="text-title">Hello, {user?.displayName ?? 'there'}</h1>
+          <p className="mt-1 text-lg text-brand-100">Here is what is on your shelf.</p>
+        </div>
+        {features.files ? (
+          <Link to="/uploads/new" className={buttonClass('secondary', 'lg', 'relative')}>
+            <Glyph name="upload" className="size-5" />
+            Upload a resource
+          </Link>
+        ) : (
+          <Link to="/books" className={buttonClass('secondary', 'lg', 'relative')}>
+            <Glyph name="search" className="size-5" />
+            Browse books
+          </Link>
+        )}
+      </section>
+
+      {features.files ? <ActivityDashboard /> : <ShelfDashboard memberSince={user ? formatDate(user.createdAt) : ''} />}
 
       <ul className="mt-6 grid gap-5 sm:grid-cols-3">
-        {ACTIONS.map((action) => (
-          <li key={action.to}>
-            <Link to={action.to} className="clay-sm clay-lift flex items-center gap-3 p-4">
-              <ClayIcon name={action.icon} tone={action.tone} size="sm" />
-              <span>
-                <span className="block font-bold">{action.label}</span>
-                <span className="block text-xs text-muted">{action.hint}</span>
-              </span>
-            </Link>
-          </li>
-        ))}
+        {ACTIONS.filter((action) => features.files || !action.needsFiles)
+          .slice(0, 3)
+          .map((action) => (
+            <li key={action.to}>
+              <ActionTile {...action} />
+            </li>
+          ))}
       </ul>
     </>
+  )
+}
+
+function DownloadRow({ item }: { item: DownloadRecord }) {
+  return (
+    <li className="clay-well flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+      <div className="min-w-0">
+        {item.type === 'BOOK' ? (
+          <Link to={`/books/${item.targetId}`} className="block truncate font-bold text-brand-700 hover:underline">
+            {item.title}
+          </Link>
+        ) : (
+          <p className="truncate font-bold">{item.title}</p>
+        )}
+        <p className="text-xs text-muted">{item.type === 'BOOK' ? 'Book' : 'Resource'}</p>
+      </div>
+      <span className="text-sm text-muted">{formatDate(item.downloadedAt)}</span>
+    </li>
   )
 }
 
@@ -208,7 +236,7 @@ export function ProfilePage() {
       <PageHeader title="Profile" />
       <form
         noValidate
-        className="space-y-4 clay p-6"
+        className="clay space-y-4 p-6"
         onSubmit={form.handleSubmit((values) =>
           update.mutate(values, {
             onSuccess: (saved) => form.reset({ displayName: saved.displayName }),
@@ -216,17 +244,21 @@ export function ProfilePage() {
           }),
         )}
       >
+        <div className="clay-well flex items-center gap-4 p-4">
+          <Avatar name={user.displayName} seed={user.id} size="lg" />
+          <div className="min-w-0">
+            <p className="truncate font-display text-2xl font-medium">{user.displayName}</p>
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted">
+              <Badge tone={user.role === 'ADMIN' ? 'amber' : 'neutral'}>{user.role === 'ADMIN' ? 'Administrator' : 'Member'}</Badge>
+              since {formatDate(user.createdAt)}
+            </p>
+          </div>
+        </div>
+
         <Input label="Email" value={user.email} disabled readOnly hint="Your email cannot be changed." />
         <Input label="Name" error={form.formState.errors.displayName?.message} {...form.register('displayName')} />
-        <p className="text-xs text-muted">
-          {user.role === 'ADMIN' ? 'Administrator' : 'Member'} since {formatDate(user.createdAt)}
-        </p>
         <FormError error={update.error} />
-        {update.isSuccess && !form.formState.isDirty && (
-          <p role="status" className="text-sm text-green-700">
-            Saved.
-          </p>
-        )}
+        {update.isSuccess && !form.formState.isDirty && <Notice tone="success">Saved.</Notice>}
         <Button type="submit" loading={update.isPending} disabled={!form.formState.isDirty}>
           Save changes
         </Button>
@@ -241,7 +273,7 @@ export function MyDownloadsPage() {
 
   return (
     <>
-      <PageHeader title="My downloads" subtitle="Books and resources you have opened or downloaded." />
+      <PageHeader icon="download" tone="mint" title="My downloads" subtitle="Books and resources you have opened or downloaded." />
       <QueryState
         query={downloads}
         isEmpty={(data) => data.content.length === 0}
@@ -258,21 +290,9 @@ export function MyDownloadsPage() {
       >
         {(data) => (
           <>
-            <ul className="divide-y divide-line clay overflow-hidden">
+            <ul className="clay space-y-2 p-3">
               {data.content.map((item) => (
-                <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-                  <div>
-                    {item.type === 'BOOK' ? (
-                      <Link to={`/books/${item.targetId}`} className="font-medium text-brand-700 hover:underline">
-                        {item.title}
-                      </Link>
-                    ) : (
-                      <span className="font-medium">{item.title}</span>
-                    )}
-                    <p className="text-xs text-muted">{item.type === 'BOOK' ? 'Book' : 'Resource'}</p>
-                  </div>
-                  <span className="text-sm text-muted">{formatDate(item.downloadedAt)}</span>
-                </li>
+                <DownloadRow key={item.id} item={item} />
               ))}
             </ul>
             <Pagination page={data.page} totalPages={data.totalPages} onChange={(next) => set({ page: next })} />

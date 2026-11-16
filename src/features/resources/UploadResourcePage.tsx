@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { Button } from '@/components/Button'
+import { Notice } from '@/components/Clay'
 import { Input, Select, Textarea } from '@/components/Field'
 import { PageHeader } from '@/components/Misc'
 import { FormError } from '@/components/States'
@@ -76,19 +77,21 @@ export function UploadResourcePage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="Upload a resource" subtitle="A moderator reviews every upload before it becomes public." />
+      <PageHeader icon="upload" tone="sky" title="Upload a resource" subtitle="A moderator reviews every upload before it becomes public." />
 
       {bookId && book.data && (
-        <p className="mb-4 rounded-2xl bg-brand-50 px-3 py-2 text-sm">
+        <Notice className="mb-4">
           This upload will be attached to{' '}
-          <Link to={`/books/${book.data.id}`} className="font-medium text-brand-700 underline">
+          <Link to={`/books/${book.data.id}`} className="text-brand-700 underline decoration-2 underline-offset-4">
             {book.data.title}
           </Link>
           .
-        </p>
+        </Notice>
       )}
 
-      <form noValidate className="space-y-4 clay p-6" 
+      <form
+        noValidate
+        className="clay space-y-4 p-6"
         onSubmit={(event) => {
           // The file is not a react-hook-form field, so check it here: handleSubmit skips
           // `submit` when another field is invalid, and the file error would never show.
@@ -149,9 +152,13 @@ export function UploadResourcePage() {
               aria-valuenow={progress}
               aria-valuemin={0}
               aria-valuemax={100}
-              className="h-2 overflow-hidden rounded-full bg-brand-100"
+              className="clay-well h-4 overflow-hidden rounded-full p-0.5"
             >
-              <div className="h-full bg-brand-600 transition-[width]" style={{ width: `${progress}%` }} />
+              {/* A bead of clay growing along the track. */}
+              <div
+                className="h-full min-w-3 rounded-full bg-brand-600 shadow-[inset_0_-3px_4px_-2px_rgb(0_0_0/0.25),inset_0_3px_4px_-2px_rgb(255_255_255/0.6)] transition-[width]"
+                style={{ width: `${progress}%` }}
+              />
             </div>
             <p className="mt-1 text-xs text-muted">{progress < 100 ? `Uploading… ${progress}%` : 'Processing…'}</p>
           </div>

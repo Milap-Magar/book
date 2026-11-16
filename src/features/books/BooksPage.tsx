@@ -1,17 +1,18 @@
 import { Button } from '@/components/Button'
+import { Toolbar } from '@/components/Clay'
 import { PageHeader } from '@/components/Misc'
 import { Pagination } from '@/components/Pagination'
 import { SearchInput } from '@/components/SearchInput'
 import { BookGridSkeleton } from '@/components/Skeleton'
 import { EmptyState, QueryState } from '@/components/States'
-import { useBooks } from '@/features/books/api'
+import { NEWEST_FIRST, PAGE_SIZE, useBooks } from '@/features/books/api'
 import { BookGrid } from '@/features/books/BookCard'
 import { useCategories } from '@/features/categories/api'
 import { useListParams } from '@/lib/useListParams'
 
 // Must match the backend's sort whitelist.
 const SORTS = [
-  { value: 'createdAt,desc', label: 'Newest' },
+  { value: NEWEST_FIRST, label: 'Newest' },
   { value: 'title,asc', label: 'Title A–Z' },
   { value: 'ratingAvg,desc', label: 'Top rated' },
   { value: 'publishedYear,desc', label: 'Year published' },
@@ -24,20 +25,22 @@ export function BooksPage() {
   const { page, get, set } = useListParams()
   const search = get('search')
   const category = get('category')
-  const sort = get('sort') || SORTS[0].value
+  // Only a sort the API knows; anything else typed into the URL would cost a request to get a 400.
+  const sort = SORTS.find((option) => option.value === get('sort'))?.value ?? NEWEST_FIRST
 
-  const books = useBooks({ search, category, sort, page, size: 20 })
+  const books = useBooks({ search, category, sort, page, size: PAGE_SIZE })
   const categories = useCategories()
   const filtered = search !== '' || category !== ''
 
   return (
     <>
       <PageHeader
+        icon="book"
         title="Books"
-        subtitle={books.data ? `${books.data.totalElements} ${books.data.totalElements === 1 ? 'book' : 'books'}` : undefined}
+        subtitle={books.data ? `${books.data.totalElements} ${books.data.totalElements === 1 ? 'book' : 'books'} on the shelf` : 'Everything on the shelf'}
       />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+      <Toolbar className="sm:grid-cols-[1fr_auto_auto]">
         <SearchInput
           label="Search books"
           placeholder="Search by title or author"
@@ -59,7 +62,7 @@ export function BooksPage() {
             </option>
           ))}
         </select>
-      </div>
+      </Toolbar>
 
       <QueryState
         query={books}

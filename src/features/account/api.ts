@@ -1,5 +1,6 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
+import { features } from '@/lib/features'
 import { session } from '@/lib/session'
 import type { DownloadRecord, PageParams, PageResponse, User } from '@/types/api'
 
@@ -13,6 +14,7 @@ export function useUpdateProfile() {
 export function useMyDownloads(params: PageParams) {
   return useQuery({
     queryKey: ['downloads', 'mine', params] as const,
+    enabled: features.files,
     queryFn: async () => (await api.get<PageResponse<DownloadRecord>>('/users/me/downloads', { params })).data,
     placeholderData: keepPreviousData,
   })

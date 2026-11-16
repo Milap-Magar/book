@@ -1,10 +1,13 @@
 import { NavLink, Outlet } from 'react-router'
+import { segmentClass } from '@/components/buttonStyles'
+import { features } from '@/lib/features'
 
 const links = [
   { to: '/admin', label: 'Overview', end: true },
-  { to: '/admin/resources', label: 'Moderation' },
+  // Moderation needs uploads, which need file storage on the server.
+  ...(features.files ? [{ to: '/admin/resources', label: 'Moderation' }] : []),
   { to: '/admin/books', label: 'Books' },
-  { to: '/admin/categories', label: 'Categories' },
+  { to: '/admin/categories', label: 'Subjects' },
   { to: '/admin/users', label: 'Users' },
 ]
 
@@ -18,9 +21,7 @@ export function AdminLayout() {
             key={link.to}
             to={link.to}
             end={link.end}
-            className={({ isActive }) =>
-              `px-4 py-1.5 text-sm font-bold ${isActive ? 'clay-sm text-brand-700' : 'rounded-2xl text-muted hover:text-ink'}`
-            }
+            className={({ isActive }) => segmentClass(isActive)}
           >
             {link.label}
           </NavLink>

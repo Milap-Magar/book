@@ -6,27 +6,40 @@ import type { ApiErrorBody, AuthResponse } from '@/types/api'
 // Trailing slash stripped so `${API_BASE}/auth/refresh` never becomes `/v1//auth/refresh`.
 export const API_BASE = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/+$/, '')
 
-export const api = axios.create({ baseURL: API_BASE })
+// A sleeping free-tier server needs up to a minute to wake, so the limit is generous.
+export const api = axios.create({ baseURL: API_BASE, timeout: 90_000 })
 
-api.interceptors.request.use((config) => {
+/** Renew this long before the token really expires, to allow for the request's travel time. */
+const EXPIRY_MARGIN_MS = 10_000
+
+api.interceptors.request.use(async (config) => {
+  // A token that is about to expire is renewed before the request goes out. Sending it anyway
+  // would cost three requests (the 401, the refresh, the retry) instead of two.
+  const { status, expiresAt } = session.get()
+  if (status === 'authenticated' && expiresAt - Date.now() < EXPIRY_MARGIN_MS && !config.url?.startsWith('/auth/')) {
+    await refreshSession().catch(() => undefined)
+  }
+
   const { token } = session.get()
   if (token) config.headers.set('Authorization', `Bearer ${token}`)
   return config
 })
 
-// Single flight: however many requests fail with 401 at once, only one refresh call is made.
+// Single flight: however many requests need a new token at once, only one refresh call is made.
 // Refresh tokens rotate, so a second parallel call would be sent with an already-used token.
 let refreshing: Promise<AuthResponse> | null = null
 
 export function refreshSession(): Promise<AuthResponse> {
   refreshing ??= axios
-    .post<AuthResponse>(`${API_BASE}/auth/refresh`, null, { withCredentials: true })
+    .post<AuthResponse>(`${API_BASE}/auth/refresh`, null, { withCredentials: true, timeout: 90_000 })
     .then((response) => {
       session.set(response.data)
       return response.data
     })
     .catch((error: unknown) => {
-      session.clear()
+      // Only an answer from the server ("that cookie is no good") signs the user out for good.
+      // No answer at all is a network problem: the cookie may be fine, so it is tried again later.
+      session.clear({ forget: errorStatus(error) !== undefined })
       throw error
     })
     .finally(() => {
@@ -35,8 +48,23 @@ export function refreshSession(): Promise<AuthResponse> {
   return refreshing
 }
 
+/**
+ * Called once, before React renders. Exchanges the refresh cookie for an access token, but only
+ * in a browser that has signed in before: everyone else is anonymous without asking the server.
+ */
+export function restoreSession(): void {
+  if (!session.mayHaveCookie()) {
+    session.clear()
+    return
+  }
+  // A failure just means "not logged in"; refreshSession already marked the session anonymous.
+  refreshSession().catch(() => undefined)
+}
+
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean }
 
+// Safety net for a token the server rejects although the clock said it was still good
+// (the API restarted with a new signing key, or this computer's clock is off).
 api.interceptors.response.use(undefined, async (error: AxiosError) => {
   const original = error.config as RetriableConfig | undefined
   const expired =
@@ -70,7 +98,9 @@ export function errorStatus(error: unknown): number | undefined {
 
 export function errorMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
   if (axios.isAxiosError(error) && !error.response) {
-    return 'Cannot reach the server. Check your connection and try again.'
+    return error.code === 'ECONNABORTED'
+      ? 'The server took too long to answer. It may still be waking up; try again in a moment.'
+      : 'Cannot reach the server. Check your connection and try again.'
   }
   const message = errorBody(error)?.message
   // Spring answers an unmapped URL with 404 "No static resource ...". That means the endpoint

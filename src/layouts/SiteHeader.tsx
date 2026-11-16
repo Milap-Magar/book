@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router'
 import { Logo } from '@/components/brand/Logo'
+import { Avatar } from '@/components/Clay'
 import { buttonClass } from '@/components/buttonStyles'
 import { useLogout } from '@/features/auth/api'
+import { features } from '@/lib/features'
 import { useSession } from '@/lib/session'
 
 interface NavItem {
@@ -22,7 +24,7 @@ function navClass({ isActive }: { isActive: boolean }) {
   // The current page looks pressed in; the others are flat until hovered.
   return `flex min-h-11 items-center rounded-2xl px-4 text-[0.9375rem] font-bold transition-colors ${
     isActive
-      ? 'bg-brand-100 text-brand-700 shadow-[inset_0_3px_5px_rgb(var(--clay-tint)/0.22),inset_0_-2px_3px_rgb(255_255_255/0.9)]'
+      ? 'clay-pressed bg-brand-100 text-brand-700'
       : 'text-ink/70 hover:bg-brand-50 hover:text-ink'
   }`
 }
@@ -67,7 +69,7 @@ export function SiteHeader({ variant }: { variant: 'marketing' | 'app' }) {
       ? MARKETING
       : [
           { to: '/books', label: 'Books' },
-          { to: '/resources', label: 'Resources' },
+          ...(features.files ? [{ to: '/resources', label: 'Resources' }] : []),
           ...(status === 'authenticated' ? [{ to: '/dashboard', label: 'Dashboard' }] : []),
           ...(user?.role === 'ADMIN' ? [{ to: '/admin', label: 'Admin' }] : []),
         ]
@@ -88,9 +90,7 @@ export function SiteHeader({ variant }: { variant: 'marketing' | 'app' }) {
           </Link>
         )}
         <Link to="/profile" className="flex min-h-11 items-center gap-2 text-sm font-bold text-ink/80 hover:text-ink">
-          <span aria-hidden="true" className="clay-sm tint-peach grid size-10 place-items-center bg-peach font-display text-lg text-ink">
-            {user.displayName.charAt(0).toUpperCase()}
-          </span>
+          <Avatar name={user.displayName} seed={user.id} />
           <span className={variant === 'marketing' ? 'sr-only' : 'max-w-32 truncate'}>{user.displayName}</span>
         </Link>
         {variant === 'app' && (

@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { Toolbar } from '@/components/Clay'
 import { PageHeader } from '@/components/Misc'
 import { Pagination } from '@/components/Pagination'
 import { SearchInput } from '@/components/SearchInput'
@@ -25,6 +26,8 @@ export function ResourcesPage() {
   return (
     <>
       <PageHeader
+        icon="notes"
+        tone="pink"
         title="Study resources"
         subtitle="Notes, slides and past papers shared by students and approved by moderators."
         action={
@@ -34,7 +37,7 @@ export function ResourcesPage() {
         }
       />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+      <Toolbar className="sm:grid-cols-[1fr_auto_auto]">
         <SearchInput label="Search resources" placeholder="Search by title" value={search} onChange={(value) => set({ search: value })} />
         <select aria-label="Category" className={selectClass} value={category} onChange={(event) => set({ category: event.target.value })}>
           <option value="">All categories</option>
@@ -57,7 +60,7 @@ export function ResourcesPage() {
             </option>
           ))}
         </select>
-      </div>
+      </Toolbar>
 
       <QueryState
         query={resources}
