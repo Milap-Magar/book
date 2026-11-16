@@ -1,4 +1,4 @@
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import type { UseFormSetError, FieldValues, Path } from 'react-hook-form'
 import { session } from '@/lib/session'
 import type { ApiErrorBody, AuthResponse } from '@/types/api'
@@ -8,6 +8,21 @@ export const API_BASE = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/+
 
 // A sleeping free-tier server needs up to a minute to wake, so the limit is generous.
 export const api = axios.create({ baseURL: API_BASE, timeout: 90_000 })
+
+/**
+ * A static host answers a path it does not know with index.html and status 200. When the API
+ * address is wrong, that page arrives here looking like a successful answer. It is turned into
+ * a failure, so a web page is never rendered, or kept in the cache, as if it were data.
+ */
+function rejectWebPage<T>(response: AxiosResponse<T>): AxiosResponse<T> {
+  const type = String(response.headers['content-type'] ?? '')
+  if (typeof response.data === 'string' && type.includes('text/html')) {
+    throw new AxiosError('The API answered with a web page instead of data. Check VITE_API_URL.', AxiosError.ERR_BAD_RESPONSE, response.config, response.request, response)
+  }
+  return response
+}
+
+api.interceptors.response.use(rejectWebPage)
 
 /** Renew this long before the token really expires, to allow for the request's travel time. */
 const EXPIRY_MARGIN_MS = 10_000
@@ -32,6 +47,7 @@ let refreshing: Promise<AuthResponse> | null = null
 export function refreshSession(): Promise<AuthResponse> {
   refreshing ??= axios
     .post<AuthResponse>(`${API_BASE}/auth/refresh`, null, { withCredentials: true, timeout: 90_000 })
+    .then(rejectWebPage)
     .then((response) => {
       session.set(response.data)
       return response.data

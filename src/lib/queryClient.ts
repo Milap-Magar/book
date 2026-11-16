@@ -35,7 +35,15 @@ export const queryClient = new QueryClient({
 // sessionStorage. Each entry keeps the time it was fetched, so the five-minute rule above still
 // applies after a reload. Anything tied to an account (my review, admin lists) is never stored.
 
-const STORE_KEY = 'shelfmallow.cache.v1'
+const STORE_KEY = 'shelfmallow.cache.v2'
+
+// A v1 snapshot can hold a web page saved as book data (see rejectWebPage in lib/api.ts), which
+// broke every page that read it until the tab was closed. It is dropped, never read.
+try {
+  sessionStorage.removeItem('shelfmallow.cache.v1')
+} catch {
+  // Storage is blocked: there is no snapshot to drop.
+}
 
 function isPublic(key: QueryKey): boolean {
   return key[0] === 'books' || key[0] === 'categories' || (key[0] === 'reviews' && key[2] === 'list')
