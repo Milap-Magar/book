@@ -54,6 +54,49 @@ The mock is never part of a production build, and nothing in `src/` imports it.
 | `npm run lint` | Lint with oxlint |
 | `npm run preview` | Serve the production build locally |
 
+## Deploying
+
+`npm run build` writes a static site to `dist/`. Any static host can serve it, with two things set up.
+
+**1. Send unknown paths to `index.html`.** The app uses browser-history routing, so a reload on
+`/books/12` must return `index.html`, not a 404. Most hosts call this an SPA fallback or rewrite.
+
+**2. Tell the browser where the API is.** Pick one:
+
+| | How | Notes |
+|---|---|---|
+| Same origin | Leave `VITE_API_URL` unset and add a host rewrite from `/api/*` to `https://<api-host>/api/*` | No CORS, and the refresh cookie is first-party. This is what the dev server does. |
+| Cross origin | Set `VITE_API_URL=https://<api-host>/api/v1` | The API must allow this site's origin, see below. |
+
+`VITE_API_URL` is the full base URL **including `/api/v1`**. It is baked in at build time, so
+changing it on the host needs a new build, not just a restart.
+
+Optional: `VITE_FEATURE_FILES=true` once the API has file storage (see `.env.example`).
+
+### What the API needs for a cross-origin frontend
+
+Set on the backend (`java-book-api`), not here:
+
+| Variable | Value |
+|---|---|
+| `APP_CORS_ORIGINS` | This site's exact origin, e.g. `https://book.example.com`. No trailing slash, no path. |
+| `APP_COOKIE_SAME_SITE` | `Lax` if the site and the API share a registrable domain (`book.example.com` and `api.example.com`). `None` if they do not (`book.example.com` and `something.onrender.com`). |
+
+With the wrong `SameSite` value login still works, but the browser drops the refresh cookie: users
+are signed out on every reload and when the access token expires. Browsers that block third-party
+cookies do the same even with `None`, so the same-origin setup, or an API subdomain of the site's
+own domain, is the dependable choice.
+
+### Troubleshooting
+
+| Symptom | Cause |
+|---|---|
+| Login shows "Missing, invalid or expired access token". In the network tab `OPTIONS` succeeds and `POST https://<api-host>/auth/login` is 401 | `VITE_API_URL` lacks `/api/v1`. The API answers 401 for every path outside `/api/v1`. The `OPTIONS` row is the CORS preflight, a separate request, which is why one passes and one fails. |
+| Request blocked with a CORS error, no response status | This site's origin is missing from `APP_CORS_ORIGINS`, or written differently (`http` vs `https`, `www`, trailing slash). |
+| Login works, but a reload signs the user out | The refresh cookie was not stored or sent. Check `APP_COOKIE_SAME_SITE`. |
+| First request takes up to a minute | A free-tier API was asleep. The client waits 90 seconds before giving up. |
+| A reload on any page except `/` is a 404 | The SPA fallback in step 1 is missing. |
+
 ## The API contract
 
 [`docs/BACKEND_TASKS.md`](docs/BACKEND_TASKS.md) Part 2 lists every endpoint this app calls and the
